@@ -1,0 +1,41 @@
+# Render Blueprint — FastAPI backend
+# Docs: https://render.com/docs/blueprint-spec
+#
+# After connecting this repo on Render:
+# 1. Set secret env vars in the dashboard (DATABASE_URL, JWT_SECRET, CORS_ORIGINS)
+# 2. Run migrations once: Render Shell → python scripts/db_init.py
+# 3. Deploy the frontend on Vercel with VITE_API_URL pointing to this service URL
+
+services:
+  - type: web
+    name: ai-job-finder-api
+    runtime: python
+    region: frankfurt
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DB_USE_NULL_POOL
+        value: "true"
+      - key: DB_RUN_MIGRATIONS_ON_STARTUP
+        value: "false"
+      - key: JOB_FETCH_ON_STARTUP
+        value: "false"
+      - key: AI_PROVIDER
+        value: mock
+      - key: DAILY_EMAIL_ENABLED
+        value: "false"
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        sync: false
+      - key: CORS_ORIGIN_REGEX
+        value: https://.*\.vercel\.app
