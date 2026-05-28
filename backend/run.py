@@ -1,5 +1,6 @@
 """Convenience launcher for the API server."""
 
+import os
 import sys
 
 import uvicorn
@@ -10,12 +11,20 @@ from app.db_guard import DatabaseConfigError, ProductionConfigError
 
 def main() -> None:
     try:
-        s = get_settings()
+        get_settings()
     except (DatabaseConfigError, ProductionConfigError) as exc:
         print(f"Startup blocked: {exc}", file=sys.stderr)
         sys.exit(1)
 
-    uvicorn.run("app.main:app", host=s.backend_host, port=s.backend_port, reload=True)
+    port = int(os.getenv("PORT", "8000"))
+    # Render sets PORT — bind publicly and skip reload. Local dev keeps auto-reload.
+    is_production_runtime = bool(os.getenv("PORT"))
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",
+        port=port,
+        reload=not is_production_runtime,
+    )
 
 
 if __name__ == "__main__":
